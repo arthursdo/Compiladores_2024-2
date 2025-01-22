@@ -45,6 +45,10 @@ class Compilador{
 			String codigo = backend.geraCodigo(arv);
 			System.out.println(codigo);
 
+			System.out.println("Interpretador:");
+			Interpretador interpretador = new Interpretador();
+			System.out.println(interpretador.interpretarCodigo(arv).toString());
+
 		}catch(Exception e)
 		{			
 			System.out.println("Erro de compilação:\n" + e);
