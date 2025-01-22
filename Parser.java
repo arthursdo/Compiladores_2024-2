@@ -39,9 +39,10 @@ class Parser{
 
 		ArvoreSintatica resultado = Exp();
 		Token tokenCorrente = scanner.getNextToken();
-		if(tokenCorrente.token != TokenType.EOF)
-					throw (new Exception("Estava esperando: EOF"));
-
+		if(tokenCorrente.token != TokenType.EOF) {
+			//System.out.println("ERROR :" + tokenCorrente.token);
+			throw (new Exception("Estava esperando: EOF"));
+		}
 		return resultado;
 	 
 	}
@@ -63,13 +64,17 @@ class Parser{
 	 * @throws Exception If the input does not match the expected grammar structure or an expected token is missing.
 	 */
 	Exp Exp() throws Exception
-	{       Exp exp1, exp2;
+	{
+		Exp exp1, exp2;
 		Token tokenCorrente =  scanner.getNextToken();
 
-		if(tokenCorrente.token == TokenType.NUM)
-			return new Num(Integer.parseInt(tokenCorrente.lexema+""));
-		
-		
+		//System.out.println(tokenCorrente.token);
+
+		if(tokenCorrente.token == TokenType.NUM){
+			String lexema = tokenCorrente.lexema.replace(',', '.');
+			return new Num(Double.parseDouble(lexema));
+		}
+
 		if(tokenCorrente.token == TokenType.APar)
 			{
 				exp1 = Exp();

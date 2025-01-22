@@ -3,8 +3,9 @@ class ArvoreSintatica{}
 class Exp extends ArvoreSintatica{}
 
 class Num extends Exp{
- 	int num;
-	Num(int num){this.num=num;}
+ 	Double num;
+	Num(Double num){this.num=num;}
+
 }
 
 class Operador extends Exp{

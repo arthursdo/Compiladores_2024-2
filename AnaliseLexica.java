@@ -15,7 +15,7 @@ import java.io.*;
  * This enum is primarily used to classify tokens during the analysis of the input and
  * facilitates the handling of different syntactic components in parsing and code generation.
  */
-enum TokenType{ NUM,SOMA, MULT,APar,FPar, EOF}
+enum TokenType{ NUM, SOMA, MULT, APar, FPar, EOF}
 
 class Token{
   /**
@@ -28,7 +28,7 @@ class Token{
    * that forms part of the lexical token and can be utilized in subsequent
    * parsing and code generation processes.
    */
-  char lexema;
+  String lexema;
   /**
    * Specifies the type of the token as part of lexical analysis.
    *
@@ -49,13 +49,18 @@ class Token{
   * @param t The type of the token (e.g., NUM, SOMA, MULT, APar, FPar, EOF).
   */
  Token (char l, TokenType t)
- 	{ lexema=l;token = t;}	
+ { lexema=Character.toString(l);token = t;}
+
+ Token (String l, TokenType t)
+ 	{ lexema=l;token = t;}
 
 }
 
 class AnaliseLexica {
 
 	BufferedReader arquivo;
+
+	char frac = '.';
 
 	/**
 	 * Constructs an AnaliseLexica object and initializes it with the file specified by the given path.
@@ -94,11 +99,25 @@ class AnaliseLexica {
 			
 			if(currchar1 != eof && currchar1 !=10)
 			{
-								
-	
-				if (currchar >= '0' && currchar <= '9')
-					return (new Token (currchar, TokenType.NUM));
-				else
+				if (currchar >= '0' && currchar <= '9') {
+					String num = "";
+
+					do{
+						num += currchar;
+						arquivo.mark(1);
+						currchar1 = arquivo.read();
+						currchar = (char) currchar1;
+					}while ((currchar >= '0' && currchar <= '9') || currchar == frac);
+
+					arquivo.reset();
+
+					if(num.endsWith(String.valueOf(frac)))
+						num += "0";
+					//System.out.println("num: " + num);
+					//System.out.println("currchar: " + currchar);
+
+					return (new Token(num, TokenType.NUM));
+				}else
 					switch (currchar){
 						case '(':
 							return (new Token (currchar,TokenType.APar));
