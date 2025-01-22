@@ -15,7 +15,7 @@ import java.io.*;
  * This enum is primarily used to classify tokens during the analysis of the input and
  * facilitates the handling of different syntactic components in parsing and code generation.
  */
-enum TokenType{ NUM, SOMA, MULT, APar, FPar, EOF}
+enum TokenType{ NUM, SOMA, SUB, MULT, DIV, APar, FPar, EOF}
 
 class Token{
   /**
@@ -125,8 +125,12 @@ class AnaliseLexica {
 							return (new Token (currchar,TokenType.FPar));
 						case '+':
 							return (new Token (currchar,TokenType.SOMA));
+						case '-':
+							return (new Token (currchar,TokenType.SUB));
 						case '*':
 							return (new Token (currchar,TokenType.MULT));
+						case '/':
+							return (new Token (currchar,TokenType.DIV));
 						
 						default: throw (new Exception("Caractere inválido: " + ((int) currchar)));
 					}
