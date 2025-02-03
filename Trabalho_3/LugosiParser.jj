@@ -154,11 +154,12 @@ void Comando() : {}
 }
 
 // EXP -> "(" EXP OP EXP ")" | FATOR
+// EXP -> FATOR EXP_
+// EXP_ -> OP FATOR EXP_ | vazio
 void Exp() : {}
 {
     (
-        <OPEN_PARENTHESES> Exp() Op() Exp() <CLOSE_PARENTHESES>
-    |   Fator()
+       Fator() (Op() Fator())?
     )
 }
 
@@ -177,6 +178,7 @@ void Fator() : {}
     |   <NUM>
     |   <TRUE>
     |   <FALSE>
+    |  <OPEN_PARENTHESES> Exp() <CLOSE_PARENTHESES>
     )
 }
 

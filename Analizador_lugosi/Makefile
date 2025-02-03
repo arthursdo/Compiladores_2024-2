@@ -30,7 +30,6 @@ $(BIN_DIR)/%.class: $(SRC_DIR)/%.java
 	$(JAVAC) -d $(BIN_DIR) $<
 
 # Compile all the files
-# compile: $(CLASSES)
 compile:
 	$(JAVAC) -d $(BIN_DIR) $(SOURCES)
 
