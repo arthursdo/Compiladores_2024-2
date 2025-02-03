@@ -1,0 +1,108 @@
+options {
+    FORCE_LA_CHECK = true;
+    LOOKAHEAD = 2;
+}
+  
+
+PARSER_BEGIN(LugosiParser)
+import java.io.*;
+import java.util.*;
+
+public class LugosiParser {
+    public static void main(String[] args) throws ParseException,IOException {
+        LugosiParser parser;
+
+        if (args.length == 0) {
+            System.out.println("Usage: java LugosiParser <inputfile>");
+            return;
+        }else if (args.length == 1) {
+           try {
+                System.out.println("Parsing " + args[0]);
+                System.out.println("====================================");
+                parser = new LugosiParser(new FileInputStream(args[0]));
+                parser.LugosiParser();
+            } catch (FileNotFoundException e) {
+                System.out.println("File " + args[0] + " not found.");
+                return;
+            }
+        }
+
+    }
+}
+
+PARSER_END(LugosiParser)
+
+SKIP : {
+    " " 
+    | "\t" 
+    | "\n" 
+    | "\r" 
+}
+
+TOKEN : { 
+   <VOID: "void">
+ | <MAIN: "main">
+ | <LET: "let">
+ | <FLOAT: "float">
+ | <BOOL: "bool">
+ | <IF: "if">
+ | <WHILE: "while">
+ | <DO: "do">
+ | <READIO: "readIO">
+ | <PRINTIO: "printIO">
+ | <RETURN: "return">
+ | <TRUE: "true">
+ | <FALSE: "false">
+ | <MINUS: "-">
+ | <DIV: "/">
+ | <AND: "&&">
+ | <OR: "||">
+ | <LT: "<">
+ | <GT: ">">
+ | <EQUALS: "==">
+ | <ATR: ":=">
+ | <OPEN_BRACKET: "{">
+ | <CLOSE_BRACKET: "}">
+ | <SEMICOLON: ";">
+}
+
+// Convensoes lexicas
+TOKEN :
+{
+    <NUM : (["0"-"9"])+ ( "." (["0"-"9"])+ )? ( ["e","E"] ( ["+","-"] )? (["0"-"9"])+ )?>
+ |  <ID:  (["a"-"z","A"-"Z"]) (["a"-"z","A"-"Z","0"-"9"])* ( "_" (["a"-"z","A"-"Z","0"-"9"])+ )*>
+}
+
+void LugosiParser() : {}
+{
+    (
+        <VOID> { System.out.println("Palavra reservada: void"); }
+    |   <MAIN> { System.out.println("Palavra reservada: main"); }
+    |   <LET> { System.out.println("Palavra reservada: let"); }
+    |   <FLOAT> { System.out.println("Palavra reservada: float"); }
+    |   <BOOL> { System.out.println("Palavra reservada: bool"); }
+    |   <IF> { System.out.println("Palavra reservada: if"); }
+    |   <WHILE> { System.out.println("Palavra reservada: while"); }
+    |   <DO> { System.out.println("Palavra reservada: do"); }
+    |   <READIO> { System.out.println("Palavra reservada: readIO"); }
+    |   <PRINTIO> { System.out.println("Palavra reservada: printIO"); }
+    |   <RETURN> { System.out.println("Palavra reservada: return"); }
+    |   <TRUE> { System.out.println("Palavra reservada: true"); }
+    |   <FALSE> { System.out.println("Palavra reservada: false"); }
+    |   <MINUS> { System.out.println("Operador: -"); }
+    |   <DIV> { System.out.println("Operador: /"); }
+    |   <AND> { System.out.println("Operador: &&"); }
+    |   <OR> { System.out.println("Operador: ||"); }
+    |   <LT> { System.out.println("Operador: <"); }
+    |   <GT> { System.out.println("Operador: >"); }
+    |   <EQUALS> { System.out.println("Operador: =="); }
+    |   <ATR> { System.out.println("Operador: :="); }
+    |   <OPEN_BRACKET> { System.out.println("Delimitador: {"); }
+    |   <CLOSE_BRACKET> { System.out.println("Delimitador: }"); }
+    |   <SEMICOLON> { System.out.println("Delimitador: ;"); }
+    |   <NUM> { System.out.println("Numero: " + token.image); }
+    |   <ID> { System.out.println("Identificador: " + token.image); }
+    )*
+    <EOF>
+}
+
