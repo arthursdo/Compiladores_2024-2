@@ -1,6 +1,6 @@
 options {
     FORCE_LA_CHECK = true;
-    LOOKAHEAD = 2;
+    LOOKAHEAD = 15;
 }
   
 
@@ -43,6 +43,7 @@ TOKEN : {
    <VOID: "void">
  | <MAIN: "main">
  | <LET: "let">
+ | <DEF: "def">
  | <FLOAT: "float">
  | <BOOL: "bool">
  | <IF: "if">
@@ -53,56 +54,203 @@ TOKEN : {
  | <RETURN: "return">
  | <TRUE: "true">
  | <FALSE: "false">
+ | <PLUS: "+">
  | <MINUS: "-">
+ | <TIMES: "*">
  | <DIV: "/">
+ | <MOD: "%">
  | <AND: "&&">
  | <OR: "||">
  | <LT: "<">
- | <GT: ">">
+ | <GT: ">"> 
+ | <GE: ">=">
+ | <LE: "<=">
  | <EQUALS: "==">
  | <ATR: ":=">
- | <OPEN_BRACKET: "{">
- | <CLOSE_BRACKET: "}">
+ | <OPEN_BRACES: "{">
+ | <CLOSE_BRACES: "}">
+ | <OPEN_PARENTHESES: "(">
+ | <CLOSE_PARENTHESES: ")">
  | <SEMICOLON: ";">
+ | <COMMA: ",">
 }
 
 // Convensoes lexicas
 TOKEN :
 {
-    <NUM : (["0"-"9"])+ ( "." (["0"-"9"])+ )? ( ["e","E"] ( ["+","-"] )? (["0"-"9"])+ )?>
+    <NUM : (["0"-"9"])+ ( "." (["0"-"9"])+ )?>
  |  <ID:  (["a"-"z","A"-"Z"]) (["a"-"z","A"-"Z","0"-"9"])* ( "_" (["a"-"z","A"-"Z","0"-"9"])+ )*>
 }
 
+// LUGOSI -> MAIN FUNC?
+// LUGOSI -> MAIN FUNC_LIST
+// FUNC_LIST -> FUNC FUNC_LIST | vazio
 void LugosiParser() : {}
 {
+    main() FuncList() <EOF>
+}
+
+// MAIN -> "void" "main" "{" VARDECL SEQCOMANDOS "}"
+void main() : {}
+{
+    <VOID> <MAIN> <OPEN_BRACES> VarDecl() SeqComandos() <CLOSE_BRACES>
+}
+
+// VARDECL -> VARDECL "let" TIPO TOKEN_id ";" | vazio
+// VARDECL -> "let" TIPO TOKEN_id ";" VARDECL_
+// VARDECL_ ->  "let" TIPO TOKEN_id ";" VARDECL_ | vazio
+// Colocar tudo ()? garante que a recursao conseguira parar
+void VarDecl() : {}
+{
     (
-        <VOID> { System.out.println("Palavra reservada: void"); }
-    |   <MAIN> { System.out.println("Palavra reservada: main"); }
-    |   <LET> { System.out.println("Palavra reservada: let"); }
-    |   <FLOAT> { System.out.println("Palavra reservada: float"); }
-    |   <BOOL> { System.out.println("Palavra reservada: bool"); }
-    |   <IF> { System.out.println("Palavra reservada: if"); }
-    |   <WHILE> { System.out.println("Palavra reservada: while"); }
-    |   <DO> { System.out.println("Palavra reservada: do"); }
-    |   <READIO> { System.out.println("Palavra reservada: readIO"); }
-    |   <PRINTIO> { System.out.println("Palavra reservada: printIO"); }
-    |   <RETURN> { System.out.println("Palavra reservada: return"); }
-    |   <TRUE> { System.out.println("Palavra reservada: true"); }
-    |   <FALSE> { System.out.println("Palavra reservada: false"); }
-    |   <MINUS> { System.out.println("Operador: -"); }
-    |   <DIV> { System.out.println("Operador: /"); }
-    |   <AND> { System.out.println("Operador: &&"); }
-    |   <OR> { System.out.println("Operador: ||"); }
-    |   <LT> { System.out.println("Operador: <"); }
-    |   <GT> { System.out.println("Operador: >"); }
-    |   <EQUALS> { System.out.println("Operador: =="); }
-    |   <ATR> { System.out.println("Operador: :="); }
-    |   <OPEN_BRACKET> { System.out.println("Delimitador: {"); }
-    |   <CLOSE_BRACKET> { System.out.println("Delimitador: }"); }
-    |   <SEMICOLON> { System.out.println("Delimitador: ;"); }
-    |   <NUM> { System.out.println("Numero: " + token.image); }
-    |   <ID> { System.out.println("Identificador: " + token.image); }
-    )*
-    <EOF>
+        <LET> Tipo() <ID> <SEMICOLON> VarDecl()
+    )?
+}
+
+// TIPO -> "float" | "bool" | "void"
+String Tipo() : {Token t;}
+{
+    (
+        t = <FLOAT> {return t.image;}
+    |   t = <BOOL> {return t.image;}
+    |   t = <VOID> {return t.image;}
+    )
+
+}
+
+// SEQCOMANDOS -> SEQCOMANDOS COMANDO | vazio
+// SEQCOMANDOS -> COMANDO SEQCOMANDOS_
+// SEQCOMANDOS_ -> COMANDO SEQCOMANDOS_ | vazio
+void SeqComandos() : {}
+{
+    (
+        Comando() SeqComandos()
+    )?
+}
+
+// COMANDO -> TOKEN_id ":=" EXP ";"
+//         | TOKEN_id "(" LISTAEXP? ")" ";"
+//         | TOKEN_id ":=" "readIO" "(" ")" ";"
+//         | "if" EXP "{" SEQCOMANDOS "}" ";"
+//         | "while" EXP "do" "{" SEQCOMANDOS "}" ";"
+//         | "return" EXP ";"
+//         | "printIO" EXP ";"
+void Comando() : {}
+{
+    (
+        //Workaround para o problema de recursao a esquerda
+        <ID> (
+                <ATR> ( 
+                    <READIO> <OPEN_PARENTHESES> <CLOSE_PARENTHESES>
+                    |  Exp() 
+            )
+            |   <OPEN_PARENTHESES> (ListaExp())? <CLOSE_PARENTHESES>
+        ) <SEMICOLON>
+    |   <IF> Exp() <OPEN_BRACES> SeqComandos() <CLOSE_BRACES> <SEMICOLON>
+    |   <WHILE> Exp() <DO> <OPEN_BRACES> SeqComandos() <CLOSE_BRACES> <SEMICOLON>
+    |   <RETURN> Exp() <SEMICOLON>
+    |   <PRINTIO> Exp() <SEMICOLON>
+    )
+}
+
+// EXP -> "(" EXP OP EXP ")" | FATOR
+void Exp() : {}
+{
+    (
+        <OPEN_PARENTHESES> Exp() Op() Exp() <CLOSE_PARENTHESES>
+    |   Fator()
+    )
+}
+
+
+// FATOR -> TOKEN_id 
+//       | TOKEN_id "(" LISTAEXP? ")"
+//       | TOKEN_numliteral 
+//       | "true" 
+//       | "false"
+void Fator() : {}
+{
+    (
+        <ID> (
+            <OPEN_PARENTHESES> (ListaExp())? <CLOSE_PARENTHESES>
+        )?
+    |   <NUM>
+    |   <TRUE>
+    |   <FALSE>
+    )
+}
+
+// OP -> "+" | "-" | "*" | "/" | "&&" | "||" | "<" | ">" | "=="
+// Adicionado MOD para divisao inteira
+// Adicionado GE e LE para >= e <=
+String Op() : {Token t;}
+{
+    (
+        t = <PLUS> {return t.image;}
+    |   t = <MINUS> {return t.image;}
+    |   t = <TIMES> {return t.image;}
+    |   t = <DIV> {return t.image;}
+    |   t = <MOD> {return t.image;}
+    |   t = <AND> {return t.image;}
+    |   t = <OR> {return t.image;}
+    |   t = <LT> {return t.image;}
+    |   t = <GT> {return t.image;}
+    |   t = <GE> {return t.image;}
+    |   t = <LE> {return t.image;}
+    |   t = <EQUALS> {return t.image;}
+    )
+}
+
+// LISTAEXP -> EXP | LISTAEXP "," EXP
+// LISTAEXP -> EXP LISTAEXP_
+// LISTAEXP_ -> "," EXP LISTAEXP_ | vazio
+void ListaExp() : {}
+{
+    (
+        Exp() ListaExp_()
+    )
+}
+
+void ListaExp_() : {}
+{
+    (
+        <COMMA> Exp() ListaExp_()
+    )?
+}
+
+
+// FUNC -> FUNC "def" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}"
+//       | "def" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}"
+// FUNC_LIST -> FUNC FUNC_LIST | vazio
+// FUNC -> "def" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}"
+void FuncList() : {}
+{
+    (
+        Func() FuncList()
+    )?
+}
+
+void Func() : {}
+{
+    (
+        <DEF> Tipo() <ID> <OPEN_PARENTHESES> (ListaArg())? <CLOSE_PARENTHESES> <OPEN_BRACES> VarDecl() SeqComandos() <CLOSE_BRACES>
+    )
+}
+
+//LISTAARG -> TIPO TOKEN_id | LISTAARG "," TIPO TOKEN_id
+//LISTAARG -> TIPO TOKEN_id LISTAARG_
+//LISTAARG_ -> "," TIPO TOKEN_id LISTAARG_ | vazio
+void ListaArg() : {}
+{
+    (
+        Tipo() <ID> ListaArg_()
+    )
+}
+
+void ListaArg_() : {}
+{
+    (
+        <COMMA> Tipo() <ID> ListaArg_()
+    )?
 }
 

@@ -1,0 +1,19 @@
+void main {
+    let float n;
+    let float fat;
+    n := readIO();
+    fat := fatorial(n);
+    printIO fat;
+}
+
+def float fatorial(float n) {
+    let float result;
+    let float i;
+    result := 1.0;
+    i := 1.0;
+    while (i <= n) do {
+        result := (result * i);
+        i := (i + 1.0);
+    };
+    return result;
+}

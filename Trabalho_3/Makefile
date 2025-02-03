@@ -15,7 +15,11 @@ SOURCES = $(wildcard $(SRC_DIR)/*.java)
 # Compiled files
 CLASSES = $(patsubst $(SRC_DIR)/%.java, $(BIN_DIR)/%.class, $(SOURCES))
 
-GRAMAR_FILE = LugosiParser.jj
+# Input files
+INPUT_FILES = $(wildcard input/*.lug)
+
+BASE_NAME = LugosiParser
+GRAMAR_FILE = $(BASE_NAME).jj
 INPUT_FILE = teste.lug
 
 all: generate compile run
@@ -33,9 +37,14 @@ $(BIN_DIR)/%.class: $(SRC_DIR)/%.java
 compile:
 	$(JAVAC) -d $(BIN_DIR) $(SOURCES)
 
-# Run the main class
+# Run the main class 
 run:
-	$(JAVA) $(JAVA_FLAGS) LugosiParser $(INPUT_FILE)
+	@for file in $(INPUT_FILES); do \
+		echo "\nProcessing $$file:"; \
+		$(JAVA) $(JAVA_FLAGS) $(BASE_NAME) $$file; \
+	done
+
+.PHONY: run
 	
 # Clean the generated files
 clean:
